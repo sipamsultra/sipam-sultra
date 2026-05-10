@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIPAM SULTRA - Platform Aduan Masa Kini</title>
+    <title>SIPAM SULTRA - Aplikasi Pengaduan Masyarakat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
@@ -15,96 +13,84 @@
         .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .btn-primary { background: linear-gradient(90deg, #38bdf8, #818cf8); transition: all 0.3s ease; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.4); }
-        .status-badge { padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: bold; }
-        .status-pending { background: #fbbf24; color: #000; }
-        .status-proses { background: #38bdf8; color: #fff; }
-        .status-selesai { background: #22c55e; color: #fff; }
     </style>
 </head>
 <body class="overflow-x-hidden">
 
     <!-- Navbar -->
     <nav class="fixed top-0 w-full z-50 glass border-b border-white/10 px-6 py-4 flex justify-between items-center">
-        <div class="text-2xl font-800 tracking-tighter gradient-text uppercase font-bold">SIPAM SULTRA!</div>
-        <div class="hidden md:flex space-x-8 font-semibold">
-            <a href="#home" class="hover:text-sky-400 transition">Beranda</a>
-            <a href="#report" class="hover:text-sky-400 transition">Buat Aduan</a>
-            <a href="#status" class="hover:text-sky-400 transition">Cek Status</a>
-        </div>
+        <div class="text-2xl font-bold tracking-tighter gradient-text uppercase">SIPAM SULTRA</div>
         <div id="nav-auth">
-            <button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin</button>
+            <button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin Login</button>
         </div>
     </nav>
 
-    <main id="main-view">
-        <!-- Hero Section -->
-        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4">
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">Laporan Kamu, <br> <span class="gradient-text">Solusi buat kita.</span></h1>
-            <p class="text-slate-400 text-lg mb-10 max-w-2xl">Laporin masalah di satker kamu tanpa ribet. Terkoneksi langsung ke database & notifikasi email admin.</p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="#report" class="btn-primary px-8 py-4 rounded-2xl font-bold">Kirim Laporan</a>
-                <a href="#status" class="bg-white/5 border border-white/10 px-8 py-4 rounded-2xl font-bold">Cek Status</a>
-            </div>
-        </section>
-
-        <!-- Report Form Section -->
-        <section id="report" class="py-20 px-4">
-            <div class="max-w-3xl mx-auto glass p-8 rounded-3xl">
-                <h2 class="text-3xl font-bold mb-8 text-center">Form <span class="gradient-text">Aduan</span></h2>
-                <form id="formAduan" class="space-y-6">
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <input type="text" id="nama" placeholder="Nama Lengkap" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
-                        <input type="tel" id="hp" placeholder="No HP/WhatsApp" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+    <!-- UI Pengguna -->
+    <main id="user-view" class="pt-24 min-h-screen">
+        <section class="flex flex-col justify-center items-center text-center px-4 py-10">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">Lapor Cepat, <br> <span class="gradient-text">Respon Akurat.</span></h1>
+            <p class="text-slate-400 max-w-xl mb-10">Sampaikan aspirasi dan pengaduan Anda langsung ke Satker terkait di wilayah Sulawesi Tenggara.</p>
+            
+            <!-- Form Pengaduan -->
+            <div class="w-full max-w-2xl glass p-8 rounded-3xl text-left">
+                <form id="formAduan" class="space-y-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase">Nama Lengkap</label>
+                        <input type="text" id="nama" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
                     </div>
-                    <input type="email" id="email" placeholder="Email Aktif Anda" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
-                    <select id="satker" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-white">
-                        <option value="Kanwil">Kanwil Ditjenpas Sultra</option>
-                        <option value="Lapas Kendari">Lapas Kelas II A Kendari</option>
-                        <option value="Lapas Bau-Bau">Lapas Kelas II A Bau-Bau</option>
-                        <option value="Lapas Perempuan">Lapas Perempuan Kelas III Kendari</option>
-                        <option value="Lapas Khusus Anak">Lapas Khusus Anak</option> 
-                        <option value="Rutan Kendari">Rutan Kelas IIB Kendari</option>
-                        <option value="Rutan Unaaha">Rutan Kelas IIB Unaaha</option>
-                        <option value="Rutan Raha">Rutan Kelas IIB Raha</option>
-                        <option value="Rutan Kolaka">Rutan Kelas IIB Kolaka</option>
-                        <option value="Bapas Kendari">Bapas Kelas II Kendari</option>
-                        <option value="Bapas Bau-Bau">Bapas Kelas II Bau-Bau</option>
-                    </select>
-                    <textarea id="isi" rows="4" placeholder="Jelaskan detail aduan kamu..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required></textarea>
-                    <button type="submit" id="submitBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg">Kirim Laporan & Email 🔥</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase">Nomor HP/WA</label>
+                            <input type="tel" id="hp" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase">Pilih Satker</label>
+                            <select id="satker" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-white">
+                                <option value="Kanwil Kemenkumham">Kanwil Kemenkumham Sultra</option>
+                                <option value="Lapas Kendari">Lapas Kelas IIA Kendari</option>
+                                <option value="Rutan Kendari">Rutan Kelas IIB Kendari</option>
+                                <option value="Bapas Kendari">Bapas Kelas II Kendari</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase">Isi Aduan</label>
+                        <textarea id="isi" rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg">Kirim Laporan Sekarang</button>
                 </form>
             </div>
         </section>
 
-        <!-- Check Status Section -->
-        <section id="status" class="py-20 px-4 bg-slate-900/50">
-            <div class="max-w-2xl mx-auto text-center">
-                <h2 class="text-3xl font-bold mb-4">Cek <span class="gradient-text">Status Laporan</span></h2>
+        <!-- Cek Status -->
+        <section class="py-10 px-4 bg-slate-900/50">
+            <div class="max-w-md mx-auto text-center">
+                <h2 class="text-2xl font-bold mb-4">Cek Status Aduan</h2>
                 <div class="flex gap-2">
-                    <input type="text" id="ticketInput" placeholder="ID Tiket (Contoh: TIC-123456)" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 uppercase">
+                    <input type="text" id="ticketInput" placeholder="Contoh: TIC-123456" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none uppercase">
                     <button onclick="checkTicketStatus()" class="btn-primary px-6 py-3 rounded-xl font-bold">Cari</button>
                 </div>
-                <div id="statusResult" class="mt-8 hidden"></div>
+                <div id="statusResult" class="mt-6 hidden"></div>
             </div>
         </section>
     </main>
 
-    <!-- Admin Dashboard Section -->
+    <!-- UI Admin -->
     <section id="admin-view" class="hidden min-h-screen pt-24 px-4 pb-10">
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold">Dashboard <span class="gradient-text">Admin</span></h2>
-                <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-sm font-bold">Keluar</button>
+                <h2 class="text-3xl font-bold">Panel <span class="gradient-text">Administrator</span></h2>
+                <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-sm font-bold">Logout</button>
             </div>
             <div class="glass rounded-3xl overflow-hidden overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-white/5 border-b border-white/10">
                         <tr>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Tiket</th>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400">ID Tiket</th>
                             <th class="px-6 py-4 text-xs uppercase text-slate-400">Pelapor</th>
                             <th class="px-6 py-4 text-xs uppercase text-slate-400">Satker</th>
                             <th class="px-6 py-4 text-xs uppercase text-slate-400">Status</th>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400 text-center">Aksi</th>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="adminTableBody"></tbody>
@@ -113,104 +99,78 @@
         </div>
     </section>
 
-    <!-- Login Modal -->
+    <!-- Modal Login -->
     <div id="login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="glass w-full max-w-md p-8 rounded-3xl relative">
+        <div class="glass w-full max-w-sm p-8 rounded-3xl relative">
             <button onclick="toggleModal('login-modal')" class="absolute top-4 right-4 text-slate-400"><i class="fas fa-times"></i></button>
             <h3 class="text-2xl font-bold text-center mb-6">Admin <span class="gradient-text">Login</span></h3>
             <form id="loginForm" class="space-y-4">
-                <input type="email" id="user" placeholder="Email Admin" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
-                <input type="password" id="pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
-                <button type="submit" id="loginBtn" class="btn-primary w-full py-3 rounded-xl font-bold">Masuk</button>
+                <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
+                <input type="password" id="adminPass" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
+                <button type="submit" id="loginBtn" class="btn-primary w-full py-3 rounded-xl font-bold">Masuk Ke Panel</button>
             </form>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass border-sky-500 px-6 py-3 rounded-2xl z-[200] opacity-0 transition-all pointer-events-none">
-        <span id="toastMsg">Berhasil!</span>
-    </div>
-
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, getDocs, updateDoc, onSnapshot, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ==========================================
-        // KONFIGURASI CUSTOM ADMIN & EMAIL
-        // ==========================================
-        const ADMIN_EMAIL = "sipamsultra@gmail.com"; // Ganti dengan Email Admin pilihan Anda
-        const ADMIN_PASSWORD = "password123";      // Ganti dengan Password Admin pilihan Anda
-        
-        // Konfigurasi EmailJS (Opsional - Jika ingin fitur kirim email aktif)
-        const EMAILJS_PUBLIC_KEY = ""; 
-        const EMAILJS_SERVICE_ID = ""; 
-        const EMAILJS_TEMPLATE_ID = ""; 
+        // ============================================================
+        // PENTING: GANTI DENGAN FIREBASE CONFIG ANDA SENDIRI
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDIpXPS1jCMR_FKmF_SSnl3fVvH1eGXJuw",
+            authDomain: "sipam-sultra.firebaseapp.com",
+            projectId: "sipam-sultra",
+            storageBucket: "sipam-sultra.firebasestorage.app",
+            messagingSenderId: "188049772880",
+            appId: "1:188049772880:web:db1e988e39135045b59c55",
+        };
 
-        // ==========================================
-        // FIREBASE SETUP
-        // ==========================================
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sipam-sultra';
-        
-        if(EMAILJS_PUBLIC_KEY) emailjs.init(EMAILJS_PUBLIC_KEY);
-
-        const app = initializeApp(firebaseConfig);
+        // Otomatis deteksi lingkungan (Jangan diubah)
+        const activeConfig = firebaseConfig.apiKey.includes("SALIN") ? JSON.parse(__firebase_config) : firebaseConfig;
+        const app = initializeApp(activeConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let currentUser = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sipam-sultra-app';
 
+        // Pantau Status Login
         onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            // Cek jika user login menggunakan kredensial admin yang kita tentukan
-            if (user && user.email === ADMIN_EMAIL) {
-                showAdminView();
+            if (user && user.email) {
+                document.getElementById('user-view').classList.add('hidden');
+                document.getElementById('admin-view').classList.remove('hidden');
+                document.getElementById('nav-auth').innerHTML = `<span class="text-xs font-bold text-sky-400 mr-4">ADMIN AKTIF</span>`;
                 loadAdminData();
             } else {
-                signInAnonymously(auth).catch(console.error);
-                showUserView();
+                document.getElementById('user-view').classList.remove('hidden');
+                document.getElementById('admin-view').classList.add('hidden');
+                document.getElementById('nav-auth').innerHTML = `<button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin Login</button>`;
+                if (!user) signInAnonymously(auth);
             }
         });
 
-        // UI HELPERS
+        // Toggle Modal
         window.toggleModal = (id) => {
-            const m = document.getElementById(id);
-            m.classList.toggle('hidden');
-            m.classList.toggle('flex');
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+            el.classList.toggle('flex');
         };
 
-        const showToast = (msg) => {
-            const t = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = msg;
-            t.classList.replace('opacity-0', 'opacity-100');
-            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 3000);
-        };
-
-        const showAdminView = () => {
-            document.getElementById('main-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.remove('hidden');
-            document.getElementById('nav-auth').innerHTML = `<span class="text-xs mr-4 text-sky-400 font-bold uppercase">Sesi Admin Aktif</span>`;
-        };
-
-        const showUserView = () => {
-            document.getElementById('main-view').classList.remove('hidden');
-            document.getElementById('admin-view').classList.add('hidden');
-            document.getElementById('nav-auth').innerHTML = `<button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin</button>`;
-        };
-
-        // SUBMIT ADUAN
+        // Kirim Aduan
         document.getElementById('formAduan').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Mengirim...";
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "Mengirim...";
 
             const ticketId = 'TIC-' + Math.floor(100000 + Math.random() * 900000);
-            const formData = {
+            const aduanData = {
                 ticketId,
                 nama: document.getElementById('nama').value,
                 hp: document.getElementById('hp').value,
-                email: document.getElementById('email').value,
                 satker: document.getElementById('satker').value,
                 isi: document.getElementById('isi').value,
                 status: 'Menunggu',
@@ -218,153 +178,117 @@
             };
 
             try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
-                await addDoc(colRef, formData);
-
-                if (EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID) {
-                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                        admin_email: ADMIN_EMAIL,
-                        from_name: formData.nama,
-                        ticket_id: ticketId,
-                        satker: formData.satker,
-                        message: formData.isi,
-                        contact: formData.hp
-                    });
-                }
-
-                alert(`Laporan Berhasil Terkirim!\nID Tiket Anda: ${ticketId}\nHarap simpan ID ini untuk memantau progres.`);
+                const colPath = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
+                await addDoc(colPath, aduanData);
+                alert("Laporan Berhasil Terkirim!\nID TIKET: " + ticketId + "\n\nSimpan ID Tiket ini untuk cek status.");
                 e.target.reset();
             } catch (err) {
-                console.error(err);
-                showToast("Terjadi kendala teknis.");
+                alert("Gagal mengirim laporan: " + err.message);
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Kirim Laporan & Email 🔥";
+                btn.disabled = false;
+                btn.innerText = "Kirim Laporan Sekarang";
             }
         });
 
-        // ADMIN FUNCTIONS
-        window.loadAdminData = () => {
+        // Load Data di Dashboard Admin
+        function loadAdminData() {
             const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
             onSnapshot(colRef, (snap) => {
                 const tbody = document.getElementById('adminTableBody');
                 tbody.innerHTML = '';
-                const items = [];
-                snap.forEach(d => items.push({id: d.id, ...d.data()}));
-                items.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-                items.forEach(item => {
+                snap.forEach(d => {
+                    const item = d.data();
                     const tr = document.createElement('tr');
-                    tr.className = "border-b border-white/5 hover:bg-white/5 transition";
+                    tr.className = "border-b border-white/5 hover:bg-white/5";
                     tr.innerHTML = `
                         <td class="px-6 py-4 font-mono text-sky-400 font-bold">${item.ticketId}</td>
-                        <td class="px-6 py-4 text-sm font-semibold">${item.nama}<br><span class="text-xs text-slate-500 font-normal">${item.hp}</span></td>
+                        <td class="px-6 py-4"><b>${item.nama}</b><br><span class="text-xs text-slate-500">${item.hp}</span></td>
                         <td class="px-6 py-4 text-sm">${item.satker}</td>
                         <td class="px-6 py-4">
-                            <select onchange="updateStatus('${item.id}', this.value)" class="bg-slate-800 text-xs rounded border border-white/10 px-2 py-1 outline-none">
+                            <select onchange="updateStatus('${d.id}', this.value)" class="bg-slate-800 text-xs rounded border border-white/10 px-2 py-1 outline-none">
                                 <option value="Menunggu" ${item.status==='Menunggu'?'selected':''}>Menunggu</option>
                                 <option value="Proses" ${item.status==='Proses'?'selected':''}>Proses</option>
                                 <option value="Selesai" ${item.status==='Selesai'?'selected':''}>Selesai</option>
                             </select>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            <button onclick="delDoc('${item.id}')" class="text-red-500 hover:text-red-400 transition"><i class="fas fa-trash"></i></button>
+                        <td class="px-6 py-4">
+                            <button onclick="hapusAduan('${d.id}')" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
-            }, (err) => console.log("Snapshot error:", err));
+            });
+        }
+
+        // Fungsi Global untuk Aksi Admin
+        window.updateStatus = async (id, newStatus) => {
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
+            await updateDoc(docRef, { status: newStatus });
+            alert("Status diperbarui!");
         };
 
-        window.updateStatus = async (id, status) => {
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
-                await updateDoc(docRef, { status });
-                showToast("Status Berhasil Diubah");
-            } catch (err) {
-                showToast("Gagal memperbarui status.");
-            }
-        };
-
-        window.delDoc = async (id) => {
-            if(!confirm("Hapus aduan ini secara permanen?")) return;
-            try {
+        window.hapusAduan = async (id) => {
+            if (confirm("Hapus aduan ini secara permanen?")) {
                 const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
                 await deleteDoc(docRef);
-                showToast("Laporan Berhasil Dihapus");
-            } catch (err) {
-                showToast("Gagal menghapus data.");
             }
         };
 
+        // Login Admin
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.innerText = "Mengecek Akun...";
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                toggleModal('login-modal');
+                alert("Login Berhasil!");
+            } catch (err) {
+                alert("Login Gagal: " + err.message + "\n\nPastikan email admin sudah didaftarkan di Firebase Console Authentication.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Masuk Ke Panel";
+            }
+        });
+
+        // Logout
+        window.handleLogout = () => {
+            signOut(auth).then(() => location.reload());
+        };
+
+        // Cek Status (Untuk Pengguna)
         window.checkTicketStatus = async () => {
             const val = document.getElementById('ticketInput').value.trim().toUpperCase();
             const res = document.getElementById('statusResult');
-            if(!val) return showToast("Masukkan ID Tiket!");
-            
-            res.innerHTML = `<div class="p-4 glass rounded-2xl animate-pulse">Mencari Data...</div>`;
+            if (!val) return;
+
+            res.innerHTML = "Mencari...";
             res.classList.remove('hidden');
 
             try {
                 const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'aduan'));
                 let found = null;
-                snap.forEach(d => { if(d.data().ticketId === val) found = d.data(); });
+                snap.forEach(d => { if (d.data().ticketId === val) found = d.data(); });
 
-                if(found) {
-                    const badgeClass = found.status==='Menunggu'?'status-pending':(found.status==='Proses'?'status-proses':'status-selesai');
+                if (found) {
                     res.innerHTML = `
-                        <div class="glass p-6 rounded-2xl text-left border-sky-500/50 shadow-xl">
-                            <div class="flex justify-between items-center mb-4">
-                                <h4 class="font-bold text-lg">${found.ticketId}</h4>
-                                <span class="status-badge ${badgeClass}">${found.status.toUpperCase()}</span>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-sm text-slate-400">Instansi/Satker: <span class="text-white font-semibold">${found.satker}</span></p>
-                                <p class="text-sm text-slate-300 mt-3 p-3 bg-white/5 rounded-xl border border-white/10 italic">"${found.isi}"</p>
-                            </div>
+                        <div class="glass p-6 rounded-2xl text-left border-sky-500/50">
+                            <h4 class="font-bold text-sky-400 mb-2">${found.ticketId}</h4>
+                            <p class="text-sm">Status: <span class="bg-sky-500 px-2 py-0.5 rounded text-xs font-bold">${found.status.toUpperCase()}</span></p>
+                            <p class="text-xs text-slate-400 mt-4 italic">"${found.isi}"</p>
                         </div>
                     `;
                 } else {
-                    res.innerHTML = `<div class="p-6 glass rounded-2xl border-red-500/30 text-red-400">ID Tiket tidak ditemukan. Silakan cek kembali kode Anda.</div>`;
+                    res.innerHTML = "<p class='text-red-400'>ID Tiket Tidak Ditemukan</p>";
                 }
-            } catch (e) {
-                showToast("Gagal memuat data.");
+            } catch (err) {
+                res.innerHTML = "Error memuat data.";
             }
-        };
-
-        // LOGIN FORM HANDLER
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const emailInp = document.getElementById('user').value;
-            const passInp = document.getElementById('pass').value;
-            const btn = document.getElementById('loginBtn');
-
-            btn.innerText = "Memproses...";
-            
-            // Validasi lokal terhadap variabel custom di atas sebelum ke Firebase Auth
-            if (emailInp !== ADMIN_EMAIL || passInp !== ADMIN_PASSWORD) {
-                alert("Login Gagal! Email atau Password Admin salah.");
-                btn.innerText = "Masuk";
-                return;
-            }
-
-            try {
-                // Pastikan user admin ini terdaftar di Firebase Auth Anda dengan email/pass yang sama
-                await signInWithEmailAndPassword(auth, emailInp, passInp);
-                toggleModal('login-modal');
-                showToast("Selamat Datang, Admin!");
-            } catch (err) { 
-                console.error(err);
-                alert("Kesalahan Autentikasi: Akun admin belum terdaftar di Firebase Auth atau jaringan bermasalah."); 
-            } finally {
-                btn.innerText = "Masuk";
-            }
-        });
-
-        window.handleLogout = () => {
-            signOut(auth).then(() => {
-                location.reload();
-            });
         };
     </script>
 </body>
