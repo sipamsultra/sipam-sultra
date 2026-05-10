@@ -13,6 +13,13 @@
         .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .btn-primary { background: linear-gradient(90deg, #38bdf8, #818cf8); transition: all 0.3s ease; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.4); }
+        .image-preview { max-width: 100%; max-height: 200px; border-radius: 12px; margin-top: 10px; display: none; object-fit: cover; border: 2px solid #38bdf8; }
+        
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #38bdf8; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .scale-in { animation: scaleIn 0.3s ease-out; }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -29,134 +36,151 @@
     <main id="user-view" class="pt-24 min-h-screen">
         <section class="flex flex-col justify-center items-center text-center px-4 py-10">
             <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">Lapor Cepat, <br> <span class="gradient-text">Respon Akurat.</span></h1>
-            <p class="text-slate-400 max-w-xl mb-10">Sampaikan aspirasi dan pengaduan Anda langsung ke Satker terkait di wilayah Sulawesi Tenggara.</p>
+            <p class="text-slate-400 max-w-xl mb-10">Sistem Pengaduan Masyarakat Sulawesi Tenggara Terintegrasi.</p>
             
-            <!-- Form Pengaduan -->
-            <div class="w-full max-w-2xl glass p-8 rounded-3xl text-left">
+            <div class="w-full max-w-2xl glass p-8 rounded-3xl text-left shadow-2xl">
                 <form id="formAduan" class="space-y-4">
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase">Nama Lengkap</label>
-                        <input type="text" id="nama" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="nama" placeholder="Nama Lengkap" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                        <input type="email" id="emailPelapor" placeholder="Email (Untuk Umpan Balik)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs font-bold text-slate-400 uppercase">Nomor HP/WA</label>
-                            <input type="tel" id="hp" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-slate-400 uppercase">Pilih Satker</label>
-                            <select id="satker" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-white">
-                                <option value="Kanwil Kemenkumham">Kanwil Kemenkumham Sultra</option>
-                                <option value="Lapas Kendari">Lapas Kelas IIA Kendari</option>
-                                <option value="Rutan Kendari">Rutan Kelas IIB Kendari</option>
-                                <option value="Bapas Kendari">Bapas Kelas II Kendari</option>
-                            </select>
-                        </div>
+                        <input type="tel" id="hp" placeholder="Nomor HP/WA" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                        <select id="satker" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-white">
+                            <option value="Kanwil Kemenkumham Sultra">Kanwil Kemenkumham Sultra</option>
+                            <option value="Lapas Kelas IIA Kendari">Lapas Kelas IIA Kendari</option>
+                            <option value="Rutan Kelas IIB Kendari">Rutan Kelas IIB Kendari</option>
+                            <option value="Bapas Kelas II Kendari">Bapas Kelas II Kendari</option>
+                        </select>
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase">Isi Aduan</label>
-                        <textarea id="isi" rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required></textarea>
+                    <textarea id="isi" rows="4" placeholder="Detail Laporan..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required></textarea>
+                    
+                    <div class="mt-2 flex flex-col items-center justify-center border-2 border-dashed border-white/20 rounded-2xl p-6 hover:border-sky-500 transition-all">
+                        <input type="file" id="fotoInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+                        <label for="fotoInput" class="cursor-pointer text-center w-full">
+                            <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-slate-500"></i>
+                            <p class="text-sm text-slate-400">Klik untuk unggah bukti foto</p>
+                        </label>
+                        <img id="imagePreview" class="image-preview" src="#" alt="Preview">
+                        <button type="button" id="removePhoto" class="hidden mt-2 text-xs text-red-400" onclick="clearPhoto()">Hapus</button>
                     </div>
-                    <button type="submit" id="submitBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg">Kirim Laporan Sekarang</button>
-                </form>
-            </div>
-        </section>
 
-        <!-- Cek Status -->
-        <section class="py-10 px-4 bg-slate-900/50">
-            <div class="max-w-md mx-auto text-center">
-                <h2 class="text-2xl font-bold mb-4">Cek Status Aduan</h2>
-                <div class="flex gap-2">
-                    <input type="text" id="ticketInput" placeholder="Contoh: TIC-123456" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none uppercase">
-                    <button onclick="checkTicketStatus()" class="btn-primary px-6 py-3 rounded-xl font-bold">Cari</button>
-                </div>
-                <div id="statusResult" class="mt-6 hidden"></div>
+                    <button type="submit" id="submitBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg flex justify-center items-center">Kirim Aduan</button>
+                </form>
             </div>
         </section>
     </main>
 
     <!-- UI Admin -->
     <section id="admin-view" class="hidden min-h-screen pt-24 px-4 pb-10">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-7xl mx-auto">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold">Panel <span class="gradient-text">Administrator</span></h2>
-                <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-sm font-bold">Logout</button>
+                <div>
+                    <h2 class="text-3xl font-bold">Panel <span class="gradient-text">Admin</span></h2>
+                    <p class="text-xs text-slate-400 mt-1">Ubah status untuk mengirim umpan balik otomatis ke pelapor.</p>
+                </div>
+                <button onclick="handleLogout()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-2 rounded-full font-bold hover:bg-red-500 hover:text-white transition-all">Logout</button>
             </div>
-            <div class="glass rounded-3xl overflow-hidden overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-white/5 border-b border-white/10">
-                        <tr>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400">ID Tiket</th>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Pelapor</th>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Satker</th>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Status</th>
-                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminTableBody"></tbody>
-                </table>
+            
+            <div class="glass rounded-3xl overflow-hidden shadow-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-white/5 border-b border-white/10">
+                            <tr>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Tiket & Tanggal</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Pelapor</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Isi Aduan</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Foto</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Status</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Umpan Balik</th>
+                                <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Modal Login -->
-    <div id="login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="glass w-full max-w-sm p-8 rounded-3xl relative">
-            <button onclick="toggleModal('login-modal')" class="absolute top-4 right-4 text-slate-400"><i class="fas fa-times"></i></button>
-            <h3 class="text-2xl font-bold text-center mb-6">Admin <span class="gradient-text">Login</span></h3>
+    <div id="login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="glass w-full max-w-md p-10 rounded-[2.5rem] relative border border-sky-500/20">
+            <button onclick="toggleModal('login-modal')" class="absolute top-6 right-6 text-slate-400"><i class="fas fa-times"></i></button>
+            <h3 class="text-2xl font-bold text-center mb-8">Admin <span class="gradient-text">Verifikasi</span></h3>
             <form id="loginForm" class="space-y-4">
-                <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
-                <input type="password" id="adminPass" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
-                <button type="submit" id="loginBtn" class="btn-primary w-full py-3 rounded-xl font-bold">Masuk Ke Panel</button>
+                <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500" required>
+                <input type="password" id="adminPass" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-sky-500" required>
+                <button type="submit" id="loginBtn" class="btn-primary w-full py-4 rounded-2xl font-bold shadow-lg">Masuk ke Panel</button>
             </form>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, getDocs, updateDoc, onSnapshot, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // ============================================================
-        // PENTING: GANTI DENGAN FIREBASE CONFIG ANDA SENDIRI
-        // ============================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDIpXPS1jCMR_FKmF_SSnl3fVvH1eGXJuw",
-            authDomain: "sipam-sultra.firebaseapp.com",
-            projectId: "sipam-sultra",
-            storageBucket: "sipam-sultra.firebasestorage.app",
-            messagingSenderId: "188049772880",
-            appId: "1:188049772880:web:db1e988e39135045b59c55",
-        };
-
-        // Otomatis deteksi lingkungan (Jangan diubah)
-        const activeConfig = firebaseConfig.apiKey.includes("SALIN") ? JSON.parse(__firebase_config) : firebaseConfig;
-        const app = initializeApp(activeConfig);
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sipam-sultra-app';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sipam-sultra-v1';
 
-        // Pantau Status Login
+        let currentBase64 = "";
+        let currentUser = null;
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+            }
+        };
+        initAuth();
+
         onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            const navAuth = document.getElementById('nav-auth');
+            const userView = document.getElementById('user-view');
+            const adminView = document.getElementById('admin-view');
+
             if (user && user.email) {
-                document.getElementById('user-view').classList.add('hidden');
-                document.getElementById('admin-view').classList.remove('hidden');
-                document.getElementById('nav-auth').innerHTML = `<span class="text-xs font-bold text-sky-400 mr-4">ADMIN AKTIF</span>`;
+                userView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                navAuth.innerHTML = `<span class="text-xs font-bold text-sky-400">ADMIN: ${user.email.toUpperCase()}</span>`;
                 loadAdminData();
             } else {
-                document.getElementById('user-view').classList.remove('hidden');
-                document.getElementById('admin-view').classList.add('hidden');
-                document.getElementById('nav-auth').innerHTML = `<button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin Login</button>`;
+                userView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                navAuth.innerHTML = `<button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin Login</button>`;
                 if (!user) signInAnonymously(auth);
             }
         });
 
-        // Toggle Modal
-        window.toggleModal = (id) => {
-            const el = document.getElementById(id);
-            el.classList.toggle('hidden');
-            el.classList.toggle('flex');
+        // Login Admin
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerText = "Memproses...";
+            try {
+                await signOut(auth);
+                await signInWithEmailAndPassword(auth, email, pass);
+                toggleModal('login-modal');
+            } catch (err) {
+                alert("Gagal Login: " + err.message);
+                await signInAnonymously(auth);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Masuk ke Panel";
+            }
+        });
+
+        window.handleLogout = async () => {
+            await signOut(auth);
+            await signInAnonymously(auth);
+            location.reload();
         };
 
         // Kirim Aduan
@@ -165,54 +189,71 @@
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerText = "Mengirim...";
-
-            const ticketId = 'TIC-' + Math.floor(100000 + Math.random() * 900000);
-            const aduanData = {
-                ticketId,
-                nama: document.getElementById('nama').value,
-                hp: document.getElementById('hp').value,
-                satker: document.getElementById('satker').value,
-                isi: document.getElementById('isi').value,
-                status: 'Menunggu',
-                createdAt: serverTimestamp()
-            };
-
             try {
-                const colPath = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
-                await addDoc(colPath, aduanData);
-                alert("Laporan Berhasil Terkirim!\nID TIKET: " + ticketId + "\n\nSimpan ID Tiket ini untuk cek status.");
+                const ticketId = 'TIC-' + Math.floor(100000 + Math.random() * 900000);
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'aduan'), {
+                    ticketId,
+                    nama: document.getElementById('nama').value,
+                    email: document.getElementById('emailPelapor').value,
+                    hp: document.getElementById('hp').value,
+                    satker: document.getElementById('satker').value,
+                    isi: document.getElementById('isi').value,
+                    foto: currentBase64,
+                    status: 'Menunggu',
+                    createdAt: serverTimestamp(),
+                });
+                alert("Aduan Terkirim! Simpan ID Tiket Anda: " + ticketId);
                 e.target.reset();
+                clearPhoto();
             } catch (err) {
-                alert("Gagal mengirim laporan: " + err.message);
+                alert("Gagal Kirim: " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Kirim Laporan Sekarang";
+                btn.innerText = "Kirim Aduan";
             }
         });
 
-        // Load Data di Dashboard Admin
         function loadAdminData() {
             const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
             onSnapshot(colRef, (snap) => {
                 const tbody = document.getElementById('adminTableBody');
                 tbody.innerHTML = '';
-                snap.forEach(d => {
-                    const item = d.data();
+                const docs = [];
+                snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+                docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                docs.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.className = "border-b border-white/5 hover:bg-white/5";
+                    tr.className = "border-b border-white/5 hover:bg-white/5 transition-colors";
+                    const tgl = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('id-ID') : '-';
+                    
                     tr.innerHTML = `
-                        <td class="px-6 py-4 font-mono text-sky-400 font-bold">${item.ticketId}</td>
-                        <td class="px-6 py-4"><b>${item.nama}</b><br><span class="text-xs text-slate-500">${item.hp}</span></td>
-                        <td class="px-6 py-4 text-sm">${item.satker}</td>
                         <td class="px-6 py-4">
-                            <select onchange="updateStatus('${d.id}', this.value)" class="bg-slate-800 text-xs rounded border border-white/10 px-2 py-1 outline-none">
+                            <div class="font-mono text-sky-400 font-bold">${item.ticketId}</div>
+                            <div class="text-[10px] text-slate-500">${tgl}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-slate-200">${item.nama}</div>
+                            <div class="text-[10px] text-slate-400">${item.email}</div>
+                        </td>
+                        <td class="px-6 py-4 max-w-xs truncate text-xs text-slate-300 italic">"${item.isi}"</td>
+                        <td class="px-6 py-4">
+                            ${item.foto ? `<img src="${item.foto}" class="w-10 h-10 object-cover rounded border border-white/10 cursor-pointer" onclick="window.open('${item.foto}')">` : '<span class="text-slate-600">-</span>'}
+                        </td>
+                        <td class="px-6 py-4">
+                            <select onchange="updateStatusAndNotify('${item.id}', this.value, '${item.email}', '${item.ticketId}', '${item.nama}')" class="bg-slate-800 text-[10px] border border-white/10 rounded p-1 outline-none focus:border-sky-500">
                                 <option value="Menunggu" ${item.status==='Menunggu'?'selected':''}>Menunggu</option>
                                 <option value="Proses" ${item.status==='Proses'?'selected':''}>Proses</option>
                                 <option value="Selesai" ${item.status==='Selesai'?'selected':''}>Selesai</option>
                             </select>
                         </td>
                         <td class="px-6 py-4">
-                            <button onclick="hapusAduan('${d.id}')" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button>
+                            <button onclick="sendDirectFeedback('${item.email}', '${item.ticketId}', '${item.nama}', '${item.status}')" class="flex items-center gap-2 bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-[10px] font-bold hover:bg-sky-500 hover:text-white transition-all">
+                                <i class="fas fa-paper-plane"></i> Feedback
+                            </button>
+                        </td>
+                        <td class="px-6 py-4">
+                            <button onclick="hapusAduan('${item.id}')" class="text-red-500 hover:scale-110 transition-transform"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -220,75 +261,62 @@
             });
         }
 
-        // Fungsi Global untuk Aksi Admin
-        window.updateStatus = async (id, newStatus) => {
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
-            await updateDoc(docRef, { status: newStatus });
-            alert("Status diperbarui!");
+        // FUNGSI FEEDBACK EMAIL OTOMATIS
+        window.sendDirectFeedback = (email, ticket, nama, status) => {
+            const subject = encodeURIComponent(`Umpan Balik Pengaduan SIPAM SULTRA - ${ticket}`);
+            const body = encodeURIComponent(
+                `Halo ${nama},\n\n` +
+                `Kami ingin menginformasikan bahwa aduan Anda dengan nomor tiket ${ticket} saat ini berstatus: ${status.toUpperCase()}.\n\n` +
+                `Pesan: Terima kasih telah melaporkan hal ini. Tim kami sedang menindaklanjuti laporan Anda di unit kerja terkait.\n\n` +
+                `Salam,\n` +
+                `Admin SIPAM SULTRA`
+            );
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        };
+
+        window.updateStatusAndNotify = async (id, s, email, ticket, nama) => {
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id), { status: s });
+                // Beri pilihan ke admin untuk kirim email saat status berubah
+                if (s === 'Selesai' || s === 'Proses') {
+                    if (confirm(`Status diperbarui ke ${s}. Kirim notifikasi email ke pelapor sekarang?`)) {
+                        sendDirectFeedback(email, ticket, nama, s);
+                    }
+                }
+            } catch (err) {
+                alert("Gagal update: " + err.message);
+            }
         };
 
         window.hapusAduan = async (id) => {
-            if (confirm("Hapus aduan ini secara permanen?")) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
-                await deleteDoc(docRef);
+            if(confirm("Hapus data ini secara permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id));
+        };
+
+        window.previewImage = (input) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('removePhoto').classList.remove('hidden');
+                    currentBase64 = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         };
 
-        // Login Admin
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPass').value;
-            const btn = document.getElementById('loginBtn');
-
-            btn.disabled = true;
-            btn.innerText = "Mengecek Akun...";
-
-            try {
-                await signInWithEmailAndPassword(auth, email, pass);
-                toggleModal('login-modal');
-                alert("Login Berhasil!");
-            } catch (err) {
-                alert("Login Gagal: " + err.message + "\n\nPastikan email admin sudah didaftarkan di Firebase Console Authentication.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Masuk Ke Panel";
-            }
-        });
-
-        // Logout
-        window.handleLogout = () => {
-            signOut(auth).then(() => location.reload());
+        window.clearPhoto = () => {
+            document.getElementById('fotoInput').value = "";
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('removePhoto').classList.add('hidden');
+            currentBase64 = "";
         };
 
-        // Cek Status (Untuk Pengguna)
-        window.checkTicketStatus = async () => {
-            const val = document.getElementById('ticketInput').value.trim().toUpperCase();
-            const res = document.getElementById('statusResult');
-            if (!val) return;
-
-            res.innerHTML = "Mencari...";
-            res.classList.remove('hidden');
-
-            try {
-                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'aduan'));
-                let found = null;
-                snap.forEach(d => { if (d.data().ticketId === val) found = d.data(); });
-
-                if (found) {
-                    res.innerHTML = `
-                        <div class="glass p-6 rounded-2xl text-left border-sky-500/50">
-                            <h4 class="font-bold text-sky-400 mb-2">${found.ticketId}</h4>
-                            <p class="text-sm">Status: <span class="bg-sky-500 px-2 py-0.5 rounded text-xs font-bold">${found.status.toUpperCase()}</span></p>
-                            <p class="text-xs text-slate-400 mt-4 italic">"${found.isi}"</p>
-                        </div>
-                    `;
-                } else {
-                    res.innerHTML = "<p class='text-red-400'>ID Tiket Tidak Ditemukan</p>";
-                }
-            } catch (err) {
-                res.innerHTML = "Error memuat data.";
-            }
+        window.toggleModal = (id) => {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+            el.classList.toggle('flex');
         };
     </script>
 </body>
