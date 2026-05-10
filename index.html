@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIPAM SULTRA - Platform Aduan Masa Kini</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .gradient-text { background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn-primary { background: linear-gradient(90deg, #38bdf8, #818cf8); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.4); }
+        .status-badge { padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: bold; }
+        .status-pending { background: #fbbf24; color: #000; }
+        .status-proses { background: #38bdf8; color: #fff; }
+        .status-selesai { background: #22c55e; color: #fff; }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/10 px-6 py-4 flex justify-between items-center">
+        <div class="text-2xl font-800 tracking-tighter gradient-text uppercase font-bold">SIPAM SULTRA!</div>
+        <div class="hidden md:flex space-x-8 font-semibold">
+            <a href="#home" class="hover:text-sky-400 transition">Beranda</a>
+            <a href="#report" class="hover:text-sky-400 transition">Buat Aduan</a>
+            <a href="#status" class="hover:text-sky-400 transition">Cek Status</a>
+        </div>
+        <div id="nav-auth">
+            <button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin</button>
+        </div>
+    </nav>
+
+    <main id="main-view">
+        <!-- Hero Section -->
+        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4">
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">Laporan Kamu, <br> <span class="gradient-text">Solusi buat kita.</span></h1>
+            <p class="text-slate-400 text-lg mb-10 max-w-2xl">Laporin masalah di satker kamu tanpa ribet. Terkoneksi langsung ke database & notifikasi email admin.</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#report" class="btn-primary px-8 py-4 rounded-2xl font-bold">Kirim Laporan</a>
+                <a href="#status" class="bg-white/5 border border-white/10 px-8 py-4 rounded-2xl font-bold">Cek Status</a>
+            </div>
+        </section>
+
+        <!-- Report Form Section -->
+        <section id="report" class="py-20 px-4">
+            <div class="max-w-3xl mx-auto glass p-8 rounded-3xl">
+                <h2 class="text-3xl font-bold mb-8 text-center">Form <span class="gradient-text">Aduan</span></h2>
+                <form id="formAduan" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <input type="text" id="nama" placeholder="Nama Lengkap" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                        <input type="tel" id="hp" placeholder="No HP/WhatsApp" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                    </div>
+                    <input type="email" id="email" placeholder="Email Aktif Anda" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required>
+                    <select id="satker" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 text-white">
+                        <option value="Kanwil">Kanwil Ditjenpas Sultra</option>
+                        <option value="Lapas Kendari">Lapas Kelas II A Kendari</option>
+                        <option value="Lapas Bau-Bau">Lapas Kelas II A Bau-Bau</option>
+                        <option value="Lapas Perempuan">Lapas Perempuan Kelas III Kendari</option>
+                        <option value="Lapas Khusus Anak">Lapas Khusus Anak</option> 
+                        <option value="Rutan Kendari">Rutan Kelas IIB Kendari</option>
+                        <option value="Rutan Unaaha">Rutan Kelas IIB Unaaha</option>
+                        <option value="Rutan Raha">Rutan Kelas IIB Raha</option>
+                        <option value="Rutan Kolaka">Rutan Kelas IIB Kolaka</option>
+                        <option value="Bapas Kendari">Bapas Kelas II Kendari</option>
+                        <option value="Bapas Bau-Bau">Bapas Kelas II Bau-Bau</option>
+                    </select>
+                    <textarea id="isi" rows="4" placeholder="Jelaskan detail aduan kamu..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500" required></textarea>
+                    <button type="submit" id="submitBtn" class="btn-primary w-full py-4 rounded-xl font-bold text-lg">Kirim Laporan & Email 🔥</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Check Status Section -->
+        <section id="status" class="py-20 px-4 bg-slate-900/50">
+            <div class="max-w-2xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-4">Cek <span class="gradient-text">Status Laporan</span></h2>
+                <div class="flex gap-2">
+                    <input type="text" id="ticketInput" placeholder="ID Tiket (Contoh: TIC-123456)" class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-sky-500 uppercase">
+                    <button onclick="checkTicketStatus()" class="btn-primary px-6 py-3 rounded-xl font-bold">Cari</button>
+                </div>
+                <div id="statusResult" class="mt-8 hidden"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Admin Dashboard Section -->
+    <section id="admin-view" class="hidden min-h-screen pt-24 px-4 pb-10">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold">Dashboard <span class="gradient-text">Admin</span></h2>
+                <button onclick="handleLogout()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-sm font-bold">Keluar</button>
+            </div>
+            <div class="glass rounded-3xl overflow-hidden overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 border-b border-white/10">
+                        <tr>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Tiket</th>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Pelapor</th>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Satker</th>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400">Status</th>
+                            <th class="px-6 py-4 text-xs uppercase text-slate-400 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="glass w-full max-w-md p-8 rounded-3xl relative">
+            <button onclick="toggleModal('login-modal')" class="absolute top-4 right-4 text-slate-400"><i class="fas fa-times"></i></button>
+            <h3 class="text-2xl font-bold text-center mb-6">Admin <span class="gradient-text">Login</span></h3>
+            <form id="loginForm" class="space-y-4">
+                <input type="email" id="user" placeholder="Email Admin" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
+                <input type="password" id="pass" placeholder="Password" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none" required>
+                <button type="submit" id="loginBtn" class="btn-primary w-full py-3 rounded-xl font-bold">Masuk</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass border-sky-500 px-6 py-3 rounded-2xl z-[200] opacity-0 transition-all pointer-events-none">
+        <span id="toastMsg">Berhasil!</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, getDocs, updateDoc, onSnapshot, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // KONFIGURASI CUSTOM ADMIN & EMAIL
+        // ==========================================
+        const ADMIN_EMAIL = "sipamsultra@gmail.com"; // Ganti dengan Email Admin pilihan Anda
+        const ADMIN_PASSWORD = "password123";      // Ganti dengan Password Admin pilihan Anda
+        
+        // Konfigurasi EmailJS (Opsional - Jika ingin fitur kirim email aktif)
+        const EMAILJS_PUBLIC_KEY = ""; 
+        const EMAILJS_SERVICE_ID = ""; 
+        const EMAILJS_TEMPLATE_ID = ""; 
+
+        // ==========================================
+        // FIREBASE SETUP
+        // ==========================================
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sipam-sultra';
+        
+        if(EMAILJS_PUBLIC_KEY) emailjs.init(EMAILJS_PUBLIC_KEY);
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            // Cek jika user login menggunakan kredensial admin yang kita tentukan
+            if (user && user.email === ADMIN_EMAIL) {
+                showAdminView();
+                loadAdminData();
+            } else {
+                signInAnonymously(auth).catch(console.error);
+                showUserView();
+            }
+        });
+
+        // UI HELPERS
+        window.toggleModal = (id) => {
+            const m = document.getElementById(id);
+            m.classList.toggle('hidden');
+            m.classList.toggle('flex');
+        };
+
+        const showToast = (msg) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => t.classList.replace('opacity-100', 'opacity-0'), 3000);
+        };
+
+        const showAdminView = () => {
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('hidden');
+            document.getElementById('nav-auth').innerHTML = `<span class="text-xs mr-4 text-sky-400 font-bold uppercase">Sesi Admin Aktif</span>`;
+        };
+
+        const showUserView = () => {
+            document.getElementById('main-view').classList.remove('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('nav-auth').innerHTML = `<button onclick="toggleModal('login-modal')" class="bg-white/10 px-5 py-2 rounded-full text-sm font-bold border border-white/20">Admin</button>`;
+        };
+
+        // SUBMIT ADUAN
+        document.getElementById('formAduan').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Mengirim...";
+
+            const ticketId = 'TIC-' + Math.floor(100000 + Math.random() * 900000);
+            const formData = {
+                ticketId,
+                nama: document.getElementById('nama').value,
+                hp: document.getElementById('hp').value,
+                email: document.getElementById('email').value,
+                satker: document.getElementById('satker').value,
+                isi: document.getElementById('isi').value,
+                status: 'Menunggu',
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
+                await addDoc(colRef, formData);
+
+                if (EMAILJS_PUBLIC_KEY && EMAILJS_SERVICE_ID) {
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+                        admin_email: ADMIN_EMAIL,
+                        from_name: formData.nama,
+                        ticket_id: ticketId,
+                        satker: formData.satker,
+                        message: formData.isi,
+                        contact: formData.hp
+                    });
+                }
+
+                alert(`Laporan Berhasil Terkirim!\nID Tiket Anda: ${ticketId}\nHarap simpan ID ini untuk memantau progres.`);
+                e.target.reset();
+            } catch (err) {
+                console.error(err);
+                showToast("Terjadi kendala teknis.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Kirim Laporan & Email 🔥";
+            }
+        });
+
+        // ADMIN FUNCTIONS
+        window.loadAdminData = () => {
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'aduan');
+            onSnapshot(colRef, (snap) => {
+                const tbody = document.getElementById('adminTableBody');
+                tbody.innerHTML = '';
+                const items = [];
+                snap.forEach(d => items.push({id: d.id, ...d.data()}));
+                items.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-white/5 hover:bg-white/5 transition";
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 font-mono text-sky-400 font-bold">${item.ticketId}</td>
+                        <td class="px-6 py-4 text-sm font-semibold">${item.nama}<br><span class="text-xs text-slate-500 font-normal">${item.hp}</span></td>
+                        <td class="px-6 py-4 text-sm">${item.satker}</td>
+                        <td class="px-6 py-4">
+                            <select onchange="updateStatus('${item.id}', this.value)" class="bg-slate-800 text-xs rounded border border-white/10 px-2 py-1 outline-none">
+                                <option value="Menunggu" ${item.status==='Menunggu'?'selected':''}>Menunggu</option>
+                                <option value="Proses" ${item.status==='Proses'?'selected':''}>Proses</option>
+                                <option value="Selesai" ${item.status==='Selesai'?'selected':''}>Selesai</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="delDoc('${item.id}')" class="text-red-500 hover:text-red-400 transition"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }, (err) => console.log("Snapshot error:", err));
+        };
+
+        window.updateStatus = async (id, status) => {
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
+                await updateDoc(docRef, { status });
+                showToast("Status Berhasil Diubah");
+            } catch (err) {
+                showToast("Gagal memperbarui status.");
+            }
+        };
+
+        window.delDoc = async (id) => {
+            if(!confirm("Hapus aduan ini secara permanen?")) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'aduan', id);
+                await deleteDoc(docRef);
+                showToast("Laporan Berhasil Dihapus");
+            } catch (err) {
+                showToast("Gagal menghapus data.");
+            }
+        };
+
+        window.checkTicketStatus = async () => {
+            const val = document.getElementById('ticketInput').value.trim().toUpperCase();
+            const res = document.getElementById('statusResult');
+            if(!val) return showToast("Masukkan ID Tiket!");
+            
+            res.innerHTML = `<div class="p-4 glass rounded-2xl animate-pulse">Mencari Data...</div>`;
+            res.classList.remove('hidden');
+
+            try {
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'aduan'));
+                let found = null;
+                snap.forEach(d => { if(d.data().ticketId === val) found = d.data(); });
+
+                if(found) {
+                    const badgeClass = found.status==='Menunggu'?'status-pending':(found.status==='Proses'?'status-proses':'status-selesai');
+                    res.innerHTML = `
+                        <div class="glass p-6 rounded-2xl text-left border-sky-500/50 shadow-xl">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-bold text-lg">${found.ticketId}</h4>
+                                <span class="status-badge ${badgeClass}">${found.status.toUpperCase()}</span>
+                            </div>
+                            <div class="space-y-2">
+                                <p class="text-sm text-slate-400">Instansi/Satker: <span class="text-white font-semibold">${found.satker}</span></p>
+                                <p class="text-sm text-slate-300 mt-3 p-3 bg-white/5 rounded-xl border border-white/10 italic">"${found.isi}"</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    res.innerHTML = `<div class="p-6 glass rounded-2xl border-red-500/30 text-red-400">ID Tiket tidak ditemukan. Silakan cek kembali kode Anda.</div>`;
+                }
+            } catch (e) {
+                showToast("Gagal memuat data.");
+            }
+        };
+
+        // LOGIN FORM HANDLER
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailInp = document.getElementById('user').value;
+            const passInp = document.getElementById('pass').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.innerText = "Memproses...";
+            
+            // Validasi lokal terhadap variabel custom di atas sebelum ke Firebase Auth
+            if (emailInp !== ADMIN_EMAIL || passInp !== ADMIN_PASSWORD) {
+                alert("Login Gagal! Email atau Password Admin salah.");
+                btn.innerText = "Masuk";
+                return;
+            }
+
+            try {
+                // Pastikan user admin ini terdaftar di Firebase Auth Anda dengan email/pass yang sama
+                await signInWithEmailAndPassword(auth, emailInp, passInp);
+                toggleModal('login-modal');
+                showToast("Selamat Datang, Admin!");
+            } catch (err) { 
+                console.error(err);
+                alert("Kesalahan Autentikasi: Akun admin belum terdaftar di Firebase Auth atau jaringan bermasalah."); 
+            } finally {
+                btn.innerText = "Masuk";
+            }
+        });
+
+        window.handleLogout = () => {
+            signOut(auth).then(() => {
+                location.reload();
+            });
+        };
+    </script>
+</body>
+</html>
